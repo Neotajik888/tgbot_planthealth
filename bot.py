@@ -38,6 +38,6 @@ while True:
     try:
         bot.polling(none_stop=True, timeout=90)
     except Exception as e:
-        print(datetime.datetime.now(), e)
+        print(e)
         time.sleep(5)
         continue
