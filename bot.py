@@ -1,15 +1,15 @@
-import telebot
-import os
-
+import telebot, time
+import config
 from openai import OpenAI
 
-token = '8339742095:AAHj9W0GXJ0M-AitfR1SEcViXN14W_5NlGo'
+token = config.token
 
 bot = telebot.TeleBot(token=token)
 
 from telebot import types
 
-@bot.message_handler(commands=['start'])
+
+@bot.message_handler(commands=['start', 'help'])
 def message_received(message):
     print(message)
     bot.send_message(chat_id=message.from_user.id, text="привет, " + message.from_user.first_name)
@@ -21,18 +21,23 @@ def message_received(message):
     bot.send_message(message.from_user.id, "🇷🇺 Выберите язык / 🇬🇧 Choose your language", reply_markup=markup)
 
 
+    #client = OpenAI(api_key= config.DS, base_url="https://api.deepseek.com")
 
-client = OpenAI(api_key='sk-fb8ad433e167445f86efe794900fecc1', base_url="https://api.deepseek.com")
-
-response = client.chat.completions.create(
+#response = client.chat.completions.create(
     model="deepseek-chat",
     messages=[
         {"role": "system", "content": "You are a helpful assistant"},
         {"role": "user", "content": "Hello"},
     ],
     stream=False
-)
+#)
 
-print(response.choices[0].message.content)
+#print(response.choices[0].message.content)
 
-bot.polling(none_stop=True, interval=0)
+while True:
+    try:
+        bot.polling(none_stop=True, timeout=90)
+    except Exception as e:
+        print(datetime.datetime.now(), e)
+        time.sleep(5)
+        continue
