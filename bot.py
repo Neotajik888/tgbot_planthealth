@@ -1,6 +1,7 @@
 import telebot, time
 import config
-from openai import OpenAI
+import openai
+
 
 token = config.token
 
@@ -17,22 +18,32 @@ def message_received(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("🇷🇺 Русский")
     btn2 = types.KeyboardButton('🇬🇧 English')
+
     markup.add(btn1, btn2)
     bot.send_message(message.from_user.id, "🇷🇺 Выберите язык / 🇬🇧 Choose your language", reply_markup=markup)
 
+@bot.message_handler(content_types=['text'])
+def func(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
-    #client = OpenAI(api_key= config.DS, base_url="https://api.deepseek.com")
+    if message.text == "🇷🇺 Русский":
+        bot.send_message(message.chat.id, text="Напишите свой вопрос")
 
-#response = client.chat.completions.create(
-    model="deepseek-chat",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant"},
-        {"role": "user", "content": "Hello"},
-    ],
-    stream=False
-#)
 
-#print(response.choices[0].message.content)
+    elif message.text == "🇬🇧 English":
+        bot.send_message(message.chat.id, text="Write your question")
+
+
+from openai import OpenAI
+client = OpenAI(api_key=config.GPT)
+
+
+response = client.responses.create(
+  model="gpt-5-mini",
+  input=''
+)
+
+print(response.output_text)
 
 while True:
     try:
