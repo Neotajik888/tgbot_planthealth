@@ -1,49 +1,33 @@
 import telebot, time
 import config
-import openai
-
+from openai import OpenAI
 
 token = config.token
-
 bot = telebot.TeleBot(token=token)
-
-from telebot import types
-
+client = OpenAI(api_key=config.GPT)
 
 @bot.message_handler(commands=['start', 'help'])
 def message_received(message):
     print(message)
-    bot.send_message(chat_id=message.from_user.id, text="привет, " + message.from_user.first_name)
+    bot.send_message(chat_id=message.from_user.id, text="Привет, " + message.from_user.first_name + ', напиши свой вопрос')
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn1 = types.KeyboardButton("🇷🇺 Русский")
-    btn2 = types.KeyboardButton('🇬🇧 English')
+@bot.message_handler(func=lambda message: True)
+def AI_answer(message):
 
-    markup.add(btn1, btn2)
-    bot.send_message(message.from_user.id, "🇷🇺 Выберите язык / 🇬🇧 Choose your language", reply_markup=markup)
+    print(message.text)
 
-@bot.message_handler(content_types=['text'])
-def func(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-5-mini",
+            messages=[{"role": "user", "content": message.text}],
+        )
 
-    if message.text == "🇷🇺 Русский":
-        bot.send_message(message.chat.id, text="Напишите свой вопрос")
+        answer = completion.choices[0].message.content
+        print(answer)
+        bot.reply_to(message, answer)
 
-
-    elif message.text == "🇬🇧 English":
-        bot.send_message(message.chat.id, text="Write your question")
-
-
-from openai import OpenAI
-client = OpenAI(api_key=config.GPT)
-
-
-response = client.responses.create(
-  model="gpt-5-mini",
-  input=''
-)
-
-print(response.output_text)
+    except Exception as e:
+        bot.reply_to(message, f"Ошибка: {e}")
 
 while True:
     try:
